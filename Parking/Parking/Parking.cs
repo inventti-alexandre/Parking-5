@@ -20,6 +20,10 @@ namespace Parking
         {
             return lazy.Value;
         }
+        public void DisplayTotalRevenue()
+        {
+            Console.WriteLine($"Total revenue: {Balance}");
+        }
         public void CollectPayment(Car car)
         {
             Settings.prices.TryGetValue(car.CarType, out int price);
@@ -45,6 +49,10 @@ namespace Parking
                 CollectPayment(car);
             }
             cars.Remove(car);
+        }
+        public void DisplayNumberOfFreePlaces()
+        {
+            Console.WriteLine($"Free space: {Settings.ParkingSpace - cars.Count}");
         }
     }
 }
