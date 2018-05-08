@@ -33,5 +33,18 @@ namespace Parking
             }
 
         }
+        public void AddCar(int ident, decimal balance, CarType type)
+        {
+            cars.Add(new Car(ident, balance, type));
+        }
+        public void RemoveCar(Car car)
+        {
+            if (car.Fine > 0)
+            {
+                car.TopUp(car.Fine);
+                CollectPayment(car);
+            }
+            cars.Remove(car);
+        }
     }
 }
