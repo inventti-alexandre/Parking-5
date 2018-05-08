@@ -51,7 +51,7 @@ namespace Parking
                     Console.WriteLine("Display transaction history per minute");
                     break;
                 case 8:
-                    Console.WriteLine("Display Transactions.log"");
+                    Console.WriteLine("Display Transactions.log");
                     break;
                 case 0:
                     Console.WriteLine("Go back/Exit");
