@@ -19,6 +19,7 @@ namespace Parking
             "8 - Display Transactions.log",
             "0 - Exit"
         };
+        Parking parking;
         public void ShowList()
         {
             Console.WriteLine("Write number action, please.");
@@ -31,21 +32,28 @@ namespace Parking
                 case 1:
                     Console.Clear();
                     Console.WriteLine("Current balance");
+                    parking.DisplayTotalRevenue();
                     break;
                 case 2:
                     Console.WriteLine("Amount per minute");
                     break;
                 case 3:
                     Console.WriteLine("Count free places");
+                    parking.DisplayNumberOfFreePlaces();
                     break;
                 case 4:
-                    Console.WriteLine("Add car");
+                    Console.WriteLine("For add car type identifier, car type and balance in one line:");
+                    Console.ReadLine();
+                   // parking.AddCar();
                     break;
                 case 5:
-                    Console.WriteLine("Remove car");
+                    Console.WriteLine("For remove car type identifier:");
+                    Console.ReadLine();
+                    //parking.RemoveCar();
                     break;
                 case 6:
-                    Console.WriteLine("Top up balance car");
+                    Console.WriteLine("For top up balance car type identifier:");
+                    
                     break;
                 case 7:
                     Console.WriteLine("Display transaction history per minute");
