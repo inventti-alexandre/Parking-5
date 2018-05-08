@@ -20,6 +20,18 @@ namespace Parking
         {
             return lazy.Value;
         }
+        public void CollectPayment(Car car)
+        {
+            Settings.prices.TryGetValue(car.CarType, out int price);
+            if (car.Balance < price)
+                car.Fine = price * Settings.CoefficientFine;
+            else
+            {
+                car.Balance -= price;
+                Balance += price;
+                transactions.Add(new Transaction(DateTime.Now, car.Identifier, price));
+            }
 
+        }
     }
 }

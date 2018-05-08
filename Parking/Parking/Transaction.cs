@@ -11,5 +11,11 @@ namespace Parking
         public DateTime Time { get; private set; }
         public int IdentifierCar { get; private set; }
         public decimal Amount { get; private set; }
+        public Transaction(DateTime time, int ident, decimal amount)
+        {
+            Time = time;
+            IdentifierCar = ident;
+            Amount = amount;
+        }
     }
 }
