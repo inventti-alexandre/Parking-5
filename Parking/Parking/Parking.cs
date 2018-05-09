@@ -26,7 +26,7 @@ namespace Parking
         public static Parking GetParking() => lazy.Value;
 
         public decimal DisplayTotalRevenue() => Balance;
-        
+
         private static void SetTimer()
         {
             // Create a timer with a given interval.
@@ -46,23 +46,20 @@ namespace Parking
         }
         public static void CollectPayment(Car car)
         {
+
             Settings.prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
             {
-                car.Fine += price * Settings.CoefficientFine;
+                price = price * Settings.CoefficientFine;
             }
-            else
-            {
-                car.Balance -= price;
-                Balance += price;
-                transactions.Add(new Transaction(DateTime.Now, car.Id, price));
-            }
-
+            car.Balance -= price;
+            Balance += price;
+            transactions.Add(new Transaction(DateTime.Now, car.Id, price));
         }
 
         public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
 
-        public bool HasFine(int number) =>  cars[number - 1].Fine > 0;
+        public bool HasFine(int number) => cars[number - 1].Fine > 0;
 
         public void RemoveCar(int number)
         {
