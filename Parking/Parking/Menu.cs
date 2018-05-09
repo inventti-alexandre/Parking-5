@@ -30,6 +30,13 @@ namespace Parking
                 Console.WriteLine(el);
             }
         }
+
+        public void EndOfParagraph()
+        {
+            Console.WriteLine("Press any key to go to menu.");
+            Console.ReadKey();
+        }
+
         public bool Action()
         {
             bool flag = true;
@@ -39,21 +46,18 @@ namespace Parking
                 case 1:
                     Console.Clear();
                     Console.WriteLine($"Total revenue: {parking.DisplayTotalRevenue()}\n\n");
-                    Console.WriteLine("Press any key to go to menu.");
-                    Console.ReadKey();
+                    EndOfParagraph();
                     break;
                 case 2:
                     Console.Clear();
                     Console.WriteLine($"Amount money per minute:{parking.AmountPerMinute()}\n\n");
-                    Console.WriteLine("Press any key to go to menu.");
-                    Console.ReadKey();
+                    EndOfParagraph();
                     break;
                 case 3:
                     Console.Clear();
                     Console.WriteLine($"Free spaces: {parking.DisplayNumberOfFreePlaces()}\n\n");
                     Console.WriteLine($"Busy spaces: {parking.DisplayNumberOfBusyPlaces()}\n\n");
-                    Console.WriteLine("Press any key to go to menu.");
-                    Console.ReadKey();
+                    EndOfParagraph();
                     break;
                 case 4:
                     Console.Clear();
@@ -64,8 +68,7 @@ namespace Parking
                     {
                         parking.AddCar((int)values4[0], values4[1], (CarType)type);
                         Console.WriteLine("The car added.\n\n");
-                        Console.WriteLine("Press any key to go to menu.");
-                        Console.ReadKey();
+                        EndOfParagraph();
                     }
                     break;
                 case 5:
@@ -73,17 +76,25 @@ namespace Parking
                     if (parking.DisplayNumberOfBusyPlaces() == 0)
                     {
                         Console.WriteLine("There is not car in the parking.\n\n");
-                        Console.WriteLine("Press any key to go to menu.");
-                        Console.ReadKey();
+                        EndOfParagraph();
                     }
                     else
                     {
                         Console.WriteLine($"To remove car, please, type the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()}:");
                         int number = int.Parse(Console.ReadLine());
+                        if (parking.HasFine(number))
+                        {
+                            Console.WriteLine("The car has fine. Would you like to top up balance (type 1) or no (type 0)?");
+                            int i=int.Parse(Console.ReadLine());
+                            if (i == 0)
+                            {
+                                Console.WriteLine("The car didn`t remove.");
+                                break;
+                            }
+                        }
                         parking.RemoveCar(number);
                         Console.WriteLine("The car removed.\n\n");
-                        Console.WriteLine("Press any key to go to menu.");
-                        Console.ReadKey();
+                        EndOfParagraph();
                     }
                     break;
                 case 6:
@@ -91,30 +102,27 @@ namespace Parking
                     if (parking.DisplayNumberOfBusyPlaces() == 0)
                     {
                         Console.WriteLine("There is not car in the parking.\n\n");
-                        Console.WriteLine("Press any key to go to menu.");
-                        Console.ReadKey();
+                        EndOfParagraph();
                     }
                     else
                     {
                         Console.WriteLine($"To top up balance car, please, type in one line with spaces: the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()} and money:");
                         var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
                         Console.WriteLine($"The balance is topped up. Now balance: {parking.TopUp((int)values[0], values[1])}\n\n");
-                        Console.WriteLine("Press any key to go to menu.");
-                        Console.ReadKey();
+                        EndOfParagraph();
                     }
                     break;
                 case 7:
                     Console.Clear();
                     Console.WriteLine("Display transaction for the last minute:");
                     parking.DisplayTransactionForTheLastMinute().ForEach(n => Console.WriteLine(n));
-                    Console.WriteLine("\n\nPress any key to go to menu.");
-                    Console.ReadKey();
+                    Console.WriteLine("\n\n");
+                    EndOfParagraph();
                     break;
                 case 8:
                     Console.Clear();
                     Console.WriteLine("Display Transactions.log");
-                    Console.WriteLine("Press any key to go to menu.");
-                    Console.ReadKey();
+                    EndOfParagraph();
                     break;
                 case 0:
                     flag = false;

@@ -21,15 +21,16 @@ namespace Parking
         {
             return lazy.Value;
         }
-        public decimal DisplayTotalRevenue()
-        {
-            return Balance;
-        }
+
+        public decimal DisplayTotalRevenue() => Balance;
+
         public void CollectPayment(Car car)
         {
-            Settings.prices.TryGetValue(car.CarType, out int price);
+            Settings.prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
+            {
                 car.Fine = price * Settings.CoefficientFine;
+            }
             else
             {
                 car.Balance -= price;
@@ -38,41 +39,29 @@ namespace Parking
             }
 
         }
-        public void AddCar(int ident, decimal balance, CarType type)
-        {
-            cars.Add(new Car(ident, balance, type));
-        }
+        public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
+
+        public bool HasFine(int number) =>  cars[number - 1].Fine > 0;
+
         public void RemoveCar(int number)
         {
-            if (cars[number - 1].Fine > 0)
+            if (HasFine(number))
             {
                 TopUp(number, cars[number - 1].Fine);
                 CollectPayment(cars[number - 1]);
             }
             cars.Remove(cars[number - 1]);
         }
-        public decimal TopUp(int value, decimal money)
-        {
-            cars[value - 1].Balance += money;
-            return cars[value - 1].Balance;
-        }
-        public int DisplayNumberOfFreePlaces()
-        {
-            return cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
-        }
-        public int DisplayNumberOfBusyPlaces()
-        {
-            return cars?.Count?? 0;
-            //return cars == null ? 0 : cars.Count;
-        }
-        public decimal AmountPerMinute()
-        {
-            return transactions.Sum(n => n.Amount);
-        }
-        public List<Transaction> DisplayTransactionForTheLastMinute()
-        {
-            return transactions;
-        }
+        public decimal TopUp(int value, decimal money) => cars[value - 1].Balance += money;
+
+        public int DisplayNumberOfFreePlaces() => cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
+
+        public int DisplayNumberOfBusyPlaces() => cars?.Count ?? 0;
+
+        public decimal AmountPerMinute() => transactions.Sum(n => n.Amount);
+
+        public List<Transaction> DisplayTransactionForTheLastMinute() => transactions;
+
         public void WriteToTransactionsFile()
         {
             using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log", FileMode.OpenOrCreate))
