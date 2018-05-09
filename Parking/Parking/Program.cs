@@ -14,6 +14,7 @@ namespace Parking
             bool flag = true;
             while (flag)
             {
+                Console.Clear();
                 menu.ShowMenu();
                 flag = menu.Action();
             }
