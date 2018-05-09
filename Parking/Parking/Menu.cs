@@ -21,7 +21,7 @@ namespace Parking
         };
 
         Parking parking = Parking.GetParking();
-
+        
         public void ShowMenu()
         {
             Console.WriteLine("Write number action, please.");
@@ -41,6 +41,7 @@ namespace Parking
         {
             bool flag = true;
             int value = int.Parse(Console.ReadLine());
+            
             switch (value)
             {
                 case 1:

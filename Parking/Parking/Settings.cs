@@ -20,7 +20,7 @@ namespace Parking
         public static int CoefficientFine { get; private set; }
         static Settings()
         {
-            Timeout = 5;
+            Timeout = 3000;
             ParkingSpace = 50;
             CoefficientFine = 3;
         }

@@ -2,7 +2,9 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parking
@@ -10,26 +12,44 @@ namespace Parking
     class Parking
     {
         private static readonly Lazy<Parking> lazy = new Lazy<Parking>(() => new Parking());
-        private List<Car> cars = new List<Car>(50);
-        private List<Transaction> transactions = new List<Transaction>();
-        public decimal Balance { get; private set; }
+        private static List<Car> cars = new List<Car>(50);
+        private static List<Transaction> transactions = new List<Transaction>();
+        public static decimal Balance { get; private set; }
+        private static System.Timers.Timer aTimer;
+
         private Parking()
         {
             Balance = 0;
+            Parking.SetTimer();
         }
-        public static Parking GetParking()
-        {
-            return lazy.Value;
-        }
+
+        public static Parking GetParking() => lazy.Value;
 
         public decimal DisplayTotalRevenue() => Balance;
-
-        public void CollectPayment(Car car)
+        
+        private static void SetTimer()
+        {
+            // Create a timer with a given interval.
+            aTimer = new System.Timers.Timer(Settings.Timeout);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+        }
+        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            //Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss}", e.SignalTime);
+            foreach (var car in cars)
+            {
+                CollectPayment(car);
+            }
+        }
+        public static void CollectPayment(Car car)
         {
             Settings.prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
             {
-                car.Fine = price * Settings.CoefficientFine;
+                car.Fine += price * Settings.CoefficientFine;
             }
             else
             {
@@ -39,6 +59,7 @@ namespace Parking
             }
 
         }
+
         public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
 
         public bool HasFine(int number) =>  cars[number - 1].Fine > 0;
@@ -70,6 +91,7 @@ namespace Parking
                 fstream.Write(array, 0, array.Length); // запись массива байтов в файл
             }
         }
+
         public void DisplayTransactionsFile()
         {
             using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log"))

@@ -10,11 +10,11 @@ namespace Parking
     {
         public int Id { get; private set; }
         public decimal Fine { get; set; }
-        private decimal balance;
+        private decimal _balance;
         public decimal Balance
         {
-            get { return balance; }
-            set { if (value > 0) balance = value; }
+            get { return _balance; }
+            set { if (value >= 0) _balance = value; }
         }
         public CarType CarType { get; private set; }
         public Car(int id, decimal balance, CarType type)
