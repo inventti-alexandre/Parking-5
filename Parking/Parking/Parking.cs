@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,7 +38,7 @@ namespace Parking
             }
 
         }
-        public void AddCar(int ident, decimal balance, int type)
+        public void AddCar(int ident, decimal balance, CarType type)
         {
             cars.Add(new Car(ident, balance, type));
         }
@@ -54,9 +55,33 @@ namespace Parking
         {
             Console.WriteLine($"Free spaces: {Settings.ParkingSpace - cars.Count}");
         }
-        public void DisplayNumberOfBusyPlaces()  
+        public void DisplayNumberOfBusyPlaces()
         {
             Console.WriteLine($"Busy spaces: {cars.Count}");
+        }
+
+        public void DisplayTransactionHistoryPerMinute()
+        {
+            foreach (var el in transactions)
+                Console.WriteLine(el);
+        }
+        public void WriteToTransactionsFile()
+        {
+            using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log", FileMode.OpenOrCreate))
+            {
+                byte[] array = System.Text.Encoding.Default.GetBytes("" + DateTime.Now + transactions.Count); // преобразуем строку в байты
+                fstream.Write(array, 0, array.Length); // запись массива байтов в файл
+            }
+        }
+        public void DisplayTransactionsFile()
+        {
+            using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log"))
+            {
+                byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
+                fstream.Read(array, 0, array.Length); // считываем данные
+                string textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+                Console.WriteLine($"Текст из файла: {textFromFile}");
+            }
         }
     }
 }

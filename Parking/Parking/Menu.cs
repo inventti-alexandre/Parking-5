@@ -31,42 +31,48 @@ namespace Parking
             {
                 case 1:
                     Console.Clear();
-                    Console.WriteLine("Current balance");
-                    parking.DisplayTotalRevenue();
+                    parking.DisplayTotalRevenue(); //Current balance
                     break;
                 case 2:
+                    Console.Clear();
                     Console.WriteLine("Amount per minute");
                     break;
                 case 3:
-                    Console.WriteLine("Count free places");
-                    parking.DisplayNumberOfFreePlaces();
+                    Console.Clear();
+                    parking.DisplayNumberOfFreePlaces(); //Count free places
                     break;
                 case 4:
+                    Console.Clear();
                     Console.WriteLine("For add car type in one line with spaces: identifier, car type ( Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4) and balance:");
                     var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
-                    int type= (int)values[1];
+                    int type = (int)values[1];
                     if (Enum.IsDefined(typeof(CarType), type))
                     {
                         parking.AddCar((int)values[0], values[3], (CarType)type);
                     }
                     break;
                 case 5:
+                    Console.Clear();
                     Console.WriteLine("For remove car type the number of this car from 0 to busy places");
                     parking.DisplayNumberOfBusyPlaces();
-                    int number=int.Parse(Console.ReadLine());
+                    int number = int.Parse(Console.ReadLine());
                     parking.RemoveCar(number);
                     break;
                 case 6:
+                    Console.Clear();
                     Console.WriteLine("For top up balance car type identifier:");
-                    
+
                     break;
                 case 7:
+                    Console.Clear();
                     Console.WriteLine("Display transaction history per minute");
                     break;
                 case 8:
+                    Console.Clear();
                     Console.WriteLine("Display Transactions.log");
                     break;
                 case 0:
+                    Console.Clear();
                     Console.WriteLine("Go back/Exit");
                     break;
             }
