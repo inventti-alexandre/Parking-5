@@ -42,14 +42,19 @@ namespace Parking
                     parking.DisplayNumberOfFreePlaces();
                     break;
                 case 4:
-                    Console.WriteLine("For add car type identifier, car type and balance in one line:");
-                    Console.ReadLine();
-                   // parking.AddCar();
+                    Console.WriteLine("For add car type in one line with spaces: identifier, car type ( Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4) and balance:");
+                    var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
+                    int type= (int)values[1];
+                    if (Enum.IsDefined(typeof(CarType), type))
+                    {
+                        parking.AddCar((int)values[0], values[3], (CarType)type);
+                    }
                     break;
                 case 5:
-                    Console.WriteLine("For remove car type identifier:");
-                    Console.ReadLine();
-                    //parking.RemoveCar();
+                    Console.WriteLine("For remove car type the number of this car from 0 to busy places");
+                    parking.DisplayNumberOfBusyPlaces();
+                    int number=int.Parse(Console.ReadLine());
+                    parking.RemoveCar(number);
                     break;
                 case 6:
                     Console.WriteLine("For top up balance car type identifier:");

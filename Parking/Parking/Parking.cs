@@ -37,22 +37,26 @@ namespace Parking
             }
 
         }
-        public void AddCar(int ident, decimal balance, CarType type)
+        public void AddCar(int ident, decimal balance, int type)
         {
             cars.Add(new Car(ident, balance, type));
         }
-        public void RemoveCar(Car car)
+        public void RemoveCar(int number)
         {
-            if (car.Fine > 0)
+            if (cars[number].Fine > 0)
             {
-                car.TopUp(car.Fine);
-                CollectPayment(car);
+                cars[number].TopUp(cars[number].Fine);
+                CollectPayment(cars[number]);
             }
-            cars.Remove(car);
+            cars.Remove(cars[number]);
         }
         public void DisplayNumberOfFreePlaces()
         {
-            Console.WriteLine($"Free space: {Settings.ParkingSpace - cars.Count}");
+            Console.WriteLine($"Free spaces: {Settings.ParkingSpace - cars.Count}");
+        }
+        public void DisplayNumberOfBusyPlaces()  
+        {
+            Console.WriteLine($"Busy spaces: {cars.Count}");
         }
     }
 }
