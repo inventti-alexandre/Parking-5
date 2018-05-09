@@ -10,7 +10,13 @@ namespace Parking
     {
         static void Main(string[] args)
         {
-            
+            Menu menu = new Menu();
+            bool flag = true;
+            while (flag)
+            {
+                menu.ShowList();
+                flag = menu.Action();
+            }
         }
     }
 }

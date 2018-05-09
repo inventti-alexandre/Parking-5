@@ -24,10 +24,6 @@ namespace Parking
             CarType = type;
             Fine = 0;
         }
-        public void TopUp(decimal money)
-        {
-            Balance += money;
-            Console.WriteLine($"The balance is topped up. Now balance:{Balance}");
-        }
+
     }
 }

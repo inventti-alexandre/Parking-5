@@ -10,8 +10,8 @@ namespace Parking
     class Parking
     {
         private static readonly Lazy<Parking> lazy = new Lazy<Parking>(() => new Parking());
-        private List<Car> cars;
-        private List<Transaction> transactions;
+        private List<Car> cars = new List<Car>(50);
+        private List<Transaction> transactions = new List<Transaction>();
         public decimal Balance { get; private set; }
         private Parking()
         {
@@ -44,26 +44,36 @@ namespace Parking
         }
         public void RemoveCar(int number)
         {
-            if (cars[number].Fine > 0)
+            if (cars[number - 1].Fine > 0)
             {
-                cars[number].TopUp(cars[number].Fine);
-                CollectPayment(cars[number]);
+                TopUp(number, cars[number - 1].Fine);
+                CollectPayment(cars[number - 1]);
             }
-            cars.Remove(cars[number]);
+            cars.Remove(cars[number - 1]);
+        }
+        public void TopUp(int value, decimal money)
+        {
+            cars[value - 1].Balance += money;
+            Console.WriteLine($"The balance is topped up. Now balance:{cars[value - 1].Balance}");
         }
         public void DisplayNumberOfFreePlaces()
         {
-            Console.WriteLine($"Free spaces: {Settings.ParkingSpace - cars.Count}");
+            if (cars == null) Console.WriteLine($"Free spaces: {Settings.ParkingSpace}");
+            else Console.WriteLine($"Free spaces: {Settings.ParkingSpace - cars.Count}");
         }
-        public void DisplayNumberOfBusyPlaces()
+        public int DisplayNumberOfBusyPlaces()
         {
-            Console.WriteLine($"Busy spaces: {cars.Count}");
+            if (cars == null) return 0;
+            else return cars.Count;
         }
-
+        public void AmountPerMinute()
+        {
+            Console.WriteLine(transactions.Sum(n => n.Amount));
+        }
         public void DisplayTransactionHistoryPerMinute()
         {
-            foreach (var el in transactions)
-                Console.WriteLine(el);
+            transactions.ForEach(n => Console.WriteLine(n));
+            //foreach (var el in transactions) Console.WriteLine(el);
         }
         public void WriteToTransactionsFile()
         {
@@ -80,7 +90,7 @@ namespace Parking
                 byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
                 fstream.Read(array, 0, array.Length); // считываем данные
                 string textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
-                Console.WriteLine($"Текст из файла: {textFromFile}");
+                Console.WriteLine($"Text from file: {textFromFile}");
             }
         }
     }

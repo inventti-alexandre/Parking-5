@@ -19,23 +19,29 @@ namespace Parking
             "8 - Display Transactions.log",
             "0 - Exit"
         };
-        Parking parking;
+
+        Parking parking = Parking.GetParking();
+
         public void ShowList()
         {
             Console.WriteLine("Write number action, please.");
             foreach (var el in list) Console.WriteLine(el);
         }
-        public void Action(int value)
+        public bool Action()
         {
+            bool flag = true;
+            int value = int.Parse(Console.ReadLine());
             switch (value)
             {
                 case 1:
                     Console.Clear();
+                    //Console.WriteLine("If you change your mind type 0 (Exit) or 1(Go back)");
                     parking.DisplayTotalRevenue(); //Current balance
                     break;
                 case 2:
                     Console.Clear();
-                    Console.WriteLine("Amount per minute");
+                    Console.WriteLine("Amount money per minute:");
+
                     break;
                 case 3:
                     Console.Clear();
@@ -43,39 +49,50 @@ namespace Parking
                     break;
                 case 4:
                     Console.Clear();
-                    Console.WriteLine("For add car type in one line with spaces: identifier, car type ( Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4) and balance:");
-                    var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
-                    int type = (int)values[1];
+                    Console.WriteLine("For add car, please, type in one line with spaces: identifier, balance and car type ( Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4):");
+                    var values4 = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
+                    int type = (int)values4[2];
                     if (Enum.IsDefined(typeof(CarType), type))
                     {
-                        parking.AddCar((int)values[0], values[3], (CarType)type);
+                        parking.AddCar((int)values4[0], values4[1], (CarType)type);
+                        Console.WriteLine("The car added.");
                     }
                     break;
                 case 5:
                     Console.Clear();
-                    Console.WriteLine("For remove car type the number of this car from 0 to busy places");
-                    parking.DisplayNumberOfBusyPlaces();
-                    int number = int.Parse(Console.ReadLine());
-                    parking.RemoveCar(number);
+                    if (parking.DisplayNumberOfBusyPlaces() == 0) Console.WriteLine("There is not car in the parking.");
+                    else
+                    {
+                        Console.WriteLine($"For remove car, please, type the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()}:");
+                        int number = int.Parse(Console.ReadLine());
+                        parking.RemoveCar(number);
+                        Console.WriteLine("The car removed.");
+                    }
                     break;
                 case 6:
                     Console.Clear();
-                    Console.WriteLine("For top up balance car type identifier:");
-
+                    if (parking.DisplayNumberOfBusyPlaces() == 0) Console.WriteLine("There is not car in the parking.");
+                    else
+                    {
+                        Console.WriteLine($"For top up balance car, please, type in one line with spaces: the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()} and money:");
+                        var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
+                        parking.TopUp((int)values[0], values[1]);
+                    }
                     break;
                 case 7:
                     Console.Clear();
-                    Console.WriteLine("Display transaction history per minute");
+                    Console.WriteLine("Display transaction history per minute:");
+                    parking.DisplayTransactionHistoryPerMinute();
                     break;
                 case 8:
                     Console.Clear();
                     Console.WriteLine("Display Transactions.log");
                     break;
                 case 0:
-                    Console.Clear();
-                    Console.WriteLine("Go back/Exit");
+                    flag=false;
                     break;
             }
+            return flag;
         }
     }
 }
