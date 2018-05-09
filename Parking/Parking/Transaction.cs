@@ -8,13 +8,13 @@ namespace Parking
 {
     class Transaction
     {
-        public DateTime Time { get; private set; }
-        public int IdentifierCar { get; private set; }
+        public DateTime CreatedOn { get; private set; }
+        public int IdCar { get; private set; }
         public decimal Amount { get; private set; }
         public Transaction(DateTime time, int ident, decimal amount)
         {
-            Time = time;
-            IdentifierCar = ident;
+            CreatedOn = time;
+            IdCar = ident;
             Amount = amount;
         }
     }

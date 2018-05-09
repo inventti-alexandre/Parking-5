@@ -21,9 +21,9 @@ namespace Parking
         {
             return lazy.Value;
         }
-        public void DisplayTotalRevenue()
+        public decimal DisplayTotalRevenue()
         {
-            Console.WriteLine($"Total revenue: {Balance}");
+            return Balance;
         }
         public void CollectPayment(Car car)
         {
@@ -34,7 +34,7 @@ namespace Parking
             {
                 car.Balance -= price;
                 Balance += price;
-                transactions.Add(new Transaction(DateTime.Now, car.Identifier, price));
+                transactions.Add(new Transaction(DateTime.Now, car.Id, price));
             }
 
         }
@@ -51,29 +51,27 @@ namespace Parking
             }
             cars.Remove(cars[number - 1]);
         }
-        public void TopUp(int value, decimal money)
+        public decimal TopUp(int value, decimal money)
         {
             cars[value - 1].Balance += money;
-            Console.WriteLine($"The balance is topped up. Now balance:{cars[value - 1].Balance}");
+            return cars[value - 1].Balance;
         }
-        public void DisplayNumberOfFreePlaces()
+        public int DisplayNumberOfFreePlaces()
         {
-            if (cars == null) Console.WriteLine($"Free spaces: {Settings.ParkingSpace}");
-            else Console.WriteLine($"Free spaces: {Settings.ParkingSpace - cars.Count}");
+            return cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
         }
         public int DisplayNumberOfBusyPlaces()
         {
-            if (cars == null) return 0;
-            else return cars.Count;
+            return cars?.Count?? 0;
+            //return cars == null ? 0 : cars.Count;
         }
-        public void AmountPerMinute()
+        public decimal AmountPerMinute()
         {
-            Console.WriteLine(transactions.Sum(n => n.Amount));
+            return transactions.Sum(n => n.Amount);
         }
-        public void DisplayTransactionHistoryPerMinute()
+        public List<Transaction> DisplayTransactionForTheLastMinute()
         {
-            transactions.ForEach(n => Console.WriteLine(n));
-            //foreach (var el in transactions) Console.WriteLine(el);
+            return transactions;
         }
         public void WriteToTransactionsFile()
         {

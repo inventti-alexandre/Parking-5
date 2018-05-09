@@ -8,7 +8,7 @@ namespace Parking
 {
     class Car
     {
-        public int Identifier { get; private set; }
+        public int Id { get; private set; }
         public decimal Fine { get; set; }
         private decimal balance;
         public decimal Balance
@@ -17,9 +17,9 @@ namespace Parking
             set { if (value > 0) balance = value; }
         }
         public CarType CarType { get; private set; }
-        public Car(int identifier, decimal balance, CarType type)
+        public Car(int id, decimal balance, CarType type)
         {
-            Identifier = identifier;
+            Id = id;
             Balance = balance;
             CarType = type;
             Fine = 0;
