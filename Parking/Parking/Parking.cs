@@ -15,35 +15,49 @@ namespace Parking
         private static List<Car> cars = new List<Car>(50);
         private static List<Transaction> transactions = new List<Transaction>();
         public static decimal Balance { get; private set; }
-        private static System.Timers.Timer aTimer;
+        private static System.Timers.Timer aTimerForCollectPayment, aTimerForWriteInLog;
 
         private Parking()
         {
             Balance = 0;
-            Parking.SetTimer();
+            Parking.SetTimerForCollectPayment();
+            Parking.SetTimerForWriteInLog();
         }
 
         public static Parking GetParking() => lazy.Value;
 
         public decimal DisplayTotalRevenue() => Balance;
 
-        private static void SetTimer()
+        private static void SetTimerForCollectPayment()
         {
             // Create a timer with a given interval.
-            aTimer = new System.Timers.Timer(Settings.Timeout);
+            aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
             // Hook up the Elapsed event for the timer. 
-            aTimer.Elapsed += OnTimedEvent;
-            aTimer.AutoReset = true;
-            aTimer.Enabled = true;
+            aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
+            aTimerForCollectPayment.AutoReset = true;
+            aTimerForCollectPayment.Enabled = true;
         }
-        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        private static void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
         {
-            //Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss}", e.SignalTime);
             foreach (var car in cars)
             {
                 CollectPayment(car);
             }
         }
+
+        private static void SetTimerForWriteInLog()
+        {
+            aTimerForWriteInLog = new System.Timers.Timer(60000);
+            aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
+            aTimerForWriteInLog.AutoReset = true;
+            aTimerForWriteInLog.Enabled = true;
+        }
+        private static void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e)
+        {
+            //Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss}", e.SignalTime);
+            WriteToTransactionsFile();
+        }
+
         public static void CollectPayment(Car car)
         {
 
@@ -77,27 +91,30 @@ namespace Parking
 
         public int DisplayNumberOfBusyPlaces() => cars?.Count ?? 0;
 
-        public decimal AmountPerMinute() => transactions.Sum(n => n.Amount);
+        public static decimal AmountForTheLastMinute() => transactions.Sum(n => n.Amount);
 
         public List<Transaction> DisplayTransactionForTheLastMinute() => transactions;
 
-        public void WriteToTransactionsFile()
+        public static void WriteToTransactionsFile()
         {
-            using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log", FileMode.OpenOrCreate))
+            using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
             {
-                byte[] array = System.Text.Encoding.Default.GetBytes("" + DateTime.Now + transactions.Count); // преобразуем строку в байты
+                var str = "" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count+" ";
+                transactions.Clear();
+                byte[] array = System.Text.Encoding.Default.GetBytes(str); // преобразуем строку в байты
+                fstream.Seek(0, SeekOrigin.End);
                 fstream.Write(array, 0, array.Length); // запись массива байтов в файл
             }
         }
 
-        public void DisplayTransactionsFile()
+        public string DisplayTransactionsFile()
         {
-            using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log"))
+            using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
             {
                 byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
                 fstream.Read(array, 0, array.Length); // считываем данные
-                string textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
-                Console.WriteLine($"Text from file: {textFromFile}");
+                var textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+                return textFromFile;
             }
         }
     }
