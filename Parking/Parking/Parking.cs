@@ -59,13 +59,14 @@ namespace Parking
 
         public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
 
-        public bool HasFine(int number) => cars[number - 1].Fine > 0;
+        public bool HasFine(int number) => cars[number - 1].Balance < 0;
 
-        public void RemoveCar(int number)
+        public void RemoveCar(int number, out decimal fine)
         {
+            fine = cars[number - 1].Balance;
             if (HasFine(number))
             {
-                TopUp(number, cars[number - 1].Fine);
+                TopUp(number, Math.Abs(cars[number - 1].Balance));
                 CollectPayment(cars[number - 1]);
             }
             cars.Remove(cars[number - 1]);

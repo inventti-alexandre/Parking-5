@@ -85,16 +85,16 @@ namespace Parking
                         int number = int.Parse(Console.ReadLine());
                         if (parking.HasFine(number))
                         {
-                            Console.WriteLine("The car has fine. Would you like to top up balance (type 1) or no (type 0)?");
-                            int i=int.Parse(Console.ReadLine());
+                            Console.WriteLine("The car has fine. Would you like to top up balance (press any key) or no (press 0)?");
+                            var i=int.Parse(Console.ReadLine());
                             if (i == 0)
                             {
                                 Console.WriteLine("The car didn`t remove.");
                                 break;
                             }
                         }
-                        parking.RemoveCar(number);
-                        Console.WriteLine("The car removed.\n\n");
+                        parking.RemoveCar(number, out var balance);
+                        Console.WriteLine($"Balance was {balance}. The car removed.\n\n");
                         EndOfParagraph();
                     }
                     break;
@@ -116,7 +116,7 @@ namespace Parking
                 case 7:
                     Console.Clear();
                     Console.WriteLine("Display transaction for the last minute:");
-                    parking.DisplayTransactionForTheLastMinute().ForEach(n => Console.WriteLine(n));
+                    parking.DisplayTransactionForTheLastMinute().ForEach(n => Console.WriteLine($"Data: {n.CreatedOn} Id car:{n.IdCar} Amount: {n.Amount}"));
                     Console.WriteLine("\n\n");
                     EndOfParagraph();
                     break;
