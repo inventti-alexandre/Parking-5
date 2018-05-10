@@ -11,6 +11,7 @@ namespace Parking
         public DateTime CreatedOn { get; }
         public Guid IdCar { get; }
         public decimal Amount { get; }
+
         public Transaction(DateTime time, Guid id, decimal amount)
         {
             CreatedOn = time;
