@@ -2,7 +2,9 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parking
@@ -10,85 +12,109 @@ namespace Parking
     class Parking
     {
         private static readonly Lazy<Parking> lazy = new Lazy<Parking>(() => new Parking());
-        private List<Car> cars = new List<Car>(50);
-        private List<Transaction> transactions = new List<Transaction>();
-        public decimal Balance { get; private set; }
+        private static List<Car> cars = new List<Car>(50);
+        private static List<Transaction> transactions = new List<Transaction>();
+        public static decimal Balance { get; private set; }
+        private static System.Timers.Timer aTimerForCollectPayment, aTimerForWriteInLog;
+
         private Parking()
         {
             Balance = 0;
+            Parking.SetTimerForCollectPayment();
+            Parking.SetTimerForWriteInLog();
         }
-        public static Parking GetParking()
-        {
-            return lazy.Value;
-        }
-        public decimal DisplayTotalRevenue()
-        {
-            return Balance;
-        }
-        public void CollectPayment(Car car)
-        {
-            Settings.prices.TryGetValue(car.CarType, out int price);
-            if (car.Balance < price)
-                car.Fine = price * Settings.CoefficientFine;
-            else
-            {
-                car.Balance -= price;
-                Balance += price;
-                transactions.Add(new Transaction(DateTime.Now, car.Id, price));
-            }
 
-        }
-        public void AddCar(int ident, decimal balance, CarType type)
+        public static Parking GetParking() => lazy.Value;
+
+        public decimal DisplayTotalRevenue() => Balance;
+
+        private static void SetTimerForCollectPayment()
         {
-            cars.Add(new Car(ident, balance, type));
+            // Create a timer with a given interval.
+            aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
+            // Hook up the Elapsed event for the timer. 
+            aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
+            aTimerForCollectPayment.AutoReset = true;
+            aTimerForCollectPayment.Enabled = true;
         }
-        public void RemoveCar(int number)
+        private static void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
         {
-            if (cars[number - 1].Fine > 0)
+            foreach (var car in cars)
             {
-                TopUp(number, cars[number - 1].Fine);
+                CollectPayment(car);
+            }
+        }
+
+        private static void SetTimerForWriteInLog()
+        {
+            aTimerForWriteInLog = new System.Timers.Timer(60000);
+            aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
+            aTimerForWriteInLog.AutoReset = true;
+            aTimerForWriteInLog.Enabled = true;
+        }
+        private static void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e)
+        {
+            //Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss}", e.SignalTime);
+            WriteToTransactionsFile();
+        }
+
+        public static void CollectPayment(Car car)
+        {
+
+            Settings.prices.TryGetValue(car.CarType, out var price);
+            if (car.Balance < price)
+            {
+                price = price * Settings.CoefficientFine;
+            }
+            car.Balance -= price;
+            Balance += price;
+            transactions.Add(new Transaction(DateTime.Now, car.Id, price));
+        }
+
+        public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
+
+        public bool HasFine(int number) => cars[number - 1].Balance < 0;
+
+        public void RemoveCar(int number, out decimal fine)
+        {
+            fine = cars[number - 1].Balance;
+            if (HasFine(number))
+            {
+                TopUp(number, Math.Abs(cars[number - 1].Balance));
                 CollectPayment(cars[number - 1]);
             }
             cars.Remove(cars[number - 1]);
         }
-        public decimal TopUp(int value, decimal money)
+        public decimal TopUp(int value, decimal money) => cars[value - 1].Balance += money;
+
+        public int DisplayNumberOfFreePlaces() => cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
+
+        public int DisplayNumberOfBusyPlaces() => cars?.Count ?? 0;
+
+        public static decimal AmountForTheLastMinute() => transactions.Sum(n => n.Amount);
+
+        public List<Transaction> DisplayTransactionForTheLastMinute() => transactions;
+
+        public static void WriteToTransactionsFile()
         {
-            cars[value - 1].Balance += money;
-            return cars[value - 1].Balance;
-        }
-        public int DisplayNumberOfFreePlaces()
-        {
-            return cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
-        }
-        public int DisplayNumberOfBusyPlaces()
-        {
-            return cars?.Count?? 0;
-            //return cars == null ? 0 : cars.Count;
-        }
-        public decimal AmountPerMinute()
-        {
-            return transactions.Sum(n => n.Amount);
-        }
-        public List<Transaction> DisplayTransactionForTheLastMinute()
-        {
-            return transactions;
-        }
-        public void WriteToTransactionsFile()
-        {
-            using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log", FileMode.OpenOrCreate))
+            using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
             {
-                byte[] array = System.Text.Encoding.Default.GetBytes("" + DateTime.Now + transactions.Count); // преобразуем строку в байты
+                var str = "" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count+" ";
+                transactions.Clear();
+                byte[] array = System.Text.Encoding.Default.GetBytes(str); // преобразуем строку в байты
+                fstream.Seek(0, SeekOrigin.End);
                 fstream.Write(array, 0, array.Length); // запись массива байтов в файл
             }
         }
-        public void DisplayTransactionsFile()
+
+        public string DisplayTransactionsFile()
         {
-            using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Parking\Transactions.log"))
+            using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
             {
                 byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
                 fstream.Read(array, 0, array.Length); // считываем данные
-                string textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
-                Console.WriteLine($"Text from file: {textFromFile}");
+                var textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+                return textFromFile;
             }
         }
     }
