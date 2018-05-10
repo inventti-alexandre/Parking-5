@@ -71,7 +71,7 @@ namespace Parking
             transactions.Add(new Transaction(DateTime.Now, car.Id, price));
         }
 
-        public void AddCar(int ident, decimal balance, CarType type) => cars.Add(new Car(ident, balance, type));
+        public void AddCar(CarType type, decimal balance) => cars.Add(new Car(type, balance));
 
         public bool HasFine(int number) => cars[number - 1].Balance < 0;
 

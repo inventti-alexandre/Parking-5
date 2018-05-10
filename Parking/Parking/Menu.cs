@@ -9,6 +9,7 @@ namespace Parking
     class Menu
     {
         string[] menu = {
+            "Please, write number action.",
             "1 - Current balance",
             "2 - Revenue for the last minute",
             "3 - Show number of free and busy places",
@@ -17,14 +18,13 @@ namespace Parking
             "6 - Top up car balance",
             "7 - Display transaction for the last minute",
             "8 - Display Transactions.log",
-            "0 - Exit"
+            "Any key - Exit"
         };
 
         Parking parking = Parking.GetParking();
 
         public void ShowMenu()
         {
-            Console.WriteLine("Write number action, please.");
             foreach (var el in menu)
             {
                 Console.WriteLine(el);
@@ -38,83 +38,101 @@ namespace Parking
             Console.ReadKey();
         }
 
+        public decimal CheckOutInputDecimal()
+        {
+            decimal input = 0;
+            while (!decimal.TryParse(Console.ReadLine(), out input))
+            {
+                Console.WriteLine("You need to type digits.");
+            }
+            return input;
+        }
+
+        public int CheckOutInputInt(int firstCondition, int secondCondition)
+        {
+            int input;
+            while (!(int.TryParse(Console.ReadLine(), out input) && (input >= firstCondition && input <= secondCondition)))
+            {
+                Console.WriteLine($"You need to type number from {firstCondition} to {secondCondition}.");
+            }
+            return input;
+        }
+
         public bool Action()
         {
-            bool flag = true;
-            int value = int.Parse(Console.ReadLine());
-
-            switch (value)
+            var flag = true;
+            var value = Console.ReadKey();
+            var busyPlaces = parking.DisplayNumberOfBusyPlaces();
+            switch (value.Key)
             {
-                case 1:
+                case ConsoleKey.NumPad1:
                     Console.Clear();
                     Console.WriteLine($"Total revenue: {parking.DisplayTotalRevenue()}");
                     EndOfParagraph();
                     break;
-                case 2:
+                case ConsoleKey.NumPad2:
                     Console.Clear();
                     Console.WriteLine($"Amount money for the last minute:{Parking.AmountForTheLastMinute()}");
                     EndOfParagraph();
                     break;
-                case 3:
+                case ConsoleKey.NumPad3:
                     Console.Clear();
-                    Console.WriteLine($"Free spaces: {parking.DisplayNumberOfFreePlaces()}");
-                    Console.WriteLine($"Busy spaces: {parking.DisplayNumberOfBusyPlaces()}");
+                    Console.WriteLine($"Free spaces: {parking.DisplayNumberOfFreePlaces()}.\nBusy spaces: {busyPlaces}");
                     EndOfParagraph();
                     break;
-                case 4:
+                case ConsoleKey.NumPad4:
                     Console.Clear();
-                    Console.WriteLine("To add car, please, type in one line with spaces: identifier, balance and car type ( Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4):");
-                    var values4 = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
-                    var type = (int)values4[2];
-                    if (Enum.IsDefined(typeof(CarType), type))
-                    {
-                        parking.AddCar((int)values4[0], values4[1], (CarType)type);
-                        Console.WriteLine("The car added.");
-                        EndOfParagraph();
-                    }
+                    Console.WriteLine("To add car, please, type: car type and balance.\nType car type (Motorcycle = 1, Bus = 2, Passenger = 3, Truck = 4):");
+                    var newCarType = CheckOutInputInt(1, 4);
+                    Console.WriteLine("Type balance:");
+                    var newCarBalance = CheckOutInputDecimal();
+                    parking.AddCar((CarType)newCarType, newCarBalance);
+                    Console.WriteLine("The car added.");
+                    EndOfParagraph();
                     break;
-                case 5:
+                case ConsoleKey.NumPad5:
                     Console.Clear();
-                    if (parking.DisplayNumberOfBusyPlaces() == 0)
+                    if (busyPlaces == 0)
                     {
                         Console.WriteLine("There is not car in the parking.");
-                        EndOfParagraph();
                     }
                     else
                     {
-                        Console.WriteLine($"To remove car, please, type the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()}:");
-                        int number = int.Parse(Console.ReadLine());
-                        if (parking.HasFine(number))
+                        Console.WriteLine($"To remove car, please, type the number of this car from 1 to {busyPlaces}:");
+                        var numberOfCar = CheckOutInputInt(1, busyPlaces);
+                        if (parking.HasFine(numberOfCar))
                         {
                             Console.WriteLine("The car has fine. Would you like to top up balance (press any key) or no (press 0)?");
                             var i = int.Parse(Console.ReadLine());
                             if (i == 0)
                             {
                                 Console.WriteLine("The car didn`t remove.");
+                                EndOfParagraph();
                                 break;
                             }
                         }
-                        parking.RemoveCar(number, out var balance);
+                        parking.RemoveCar(numberOfCar, out var balance);
                         Console.WriteLine($"Balance was {balance}. The car removed.");
-                        EndOfParagraph();
                     }
+                    EndOfParagraph();
                     break;
-                case 6:
+                case ConsoleKey.NumPad6:
                     Console.Clear();
-                    if (parking.DisplayNumberOfBusyPlaces() == 0)
+                    if (busyPlaces == 0)
                     {
                         Console.WriteLine("There is not car in the parking.");
-                        EndOfParagraph();
                     }
                     else
                     {
-                        Console.WriteLine($"To top up balance car, please, type in one line with spaces: the number of this car from 1 to {parking.DisplayNumberOfBusyPlaces()} and money:");
-                        var values = Console.ReadLine().Split(' ').Select(decimal.Parse).ToArray();
-                        Console.WriteLine($"The balance is topped up. Now balance: {parking.TopUp((int)values[0], values[1])}");
-                        EndOfParagraph();
+                        Console.WriteLine($"To top up car balance, please, type the number of this car from 1 to {busyPlaces}:");
+                        var numberOfCar = CheckOutInputInt(1, busyPlaces);
+                        Console.WriteLine("Type money:");
+                        var money = CheckOutInputDecimal();
+                        Console.WriteLine($"The balance is topped up. Now balance: {parking.TopUp(numberOfCar, money)}");
                     }
+                    EndOfParagraph();
                     break;
-                case 7:
+                case ConsoleKey.NumPad7:
                     Console.Clear();
                     Console.WriteLine("Display transaction for the last minute:");
                     var list = parking.DisplayTransactionForTheLastMinute();
@@ -128,17 +146,17 @@ namespace Parking
                     }
                     EndOfParagraph();
                     break;
-                case 8:
+                case ConsoleKey.NumPad8:
                     Console.Clear();
                     Console.WriteLine("Display Transactions.log");
-                    var arrayStr=parking.DisplayTransactionsFile().Split(' ');
-                    for (int i = 0; i < arrayStr.Length-3; i++)
+                    var arrayStr = parking.DisplayTransactionsFile().Split(' ');
+                    for (var i = 0; i < arrayStr.Length - 3; i++)
                     {
                         Console.Write($"Data: {arrayStr[i]} Time: {arrayStr[++i]} Amount for the last minute: {arrayStr[++i]}. The total number of transactions for the last minute: {arrayStr[++i]}.");
                     }
                     EndOfParagraph();
                     break;
-                case 0:
+                default:
                     flag = false;
                     break;
             }

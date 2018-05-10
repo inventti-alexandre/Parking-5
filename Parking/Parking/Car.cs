@@ -8,17 +8,15 @@ namespace Parking
 {
     class Car
     {
-        public int Id { get; private set; }
-        public decimal Fine { get; set; }
+        public Guid Id { get; }
         public decimal Balance { get; set; }
+        public CarType CarType { get; }
 
-        public CarType CarType { get; private set; }
-        public Car(int id, decimal balance, CarType type)
+        public Car(CarType type, decimal balance)
         {
-            Id = id;
-            Balance = balance;
+            Id = new Guid(1, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
             CarType = type;
-            Fine = 0;
+            Balance = balance;
         }
 
     }
