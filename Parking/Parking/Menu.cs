@@ -6,7 +6,7 @@ namespace Parking
     public class Menu
     {
         private readonly string[] _menu = {
-            "Please, press the number of an action.\n",
+            "Please, enter the number of an action.\n",
             "1 - Current balance",
             "2 - Revenue for the last minute",
             "3 - Show number of free and busy places",
@@ -95,7 +95,7 @@ namespace Parking
             int input;
             while (!(int.TryParse(Console.ReadLine(), out input) && (input >= firstCondition && input <= secondCondition)))
             {
-                Console.WriteLine($"You need to type number from {firstCondition} to {secondCondition}.");
+                Console.WriteLine($"You need to enter a number from {firstCondition} to {secondCondition}.");
             }
             return input;
         }
