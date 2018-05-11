@@ -40,7 +40,7 @@ namespace Parking
 
         public decimal CheckOutInputDecimal()
         {
-            decimal input = 0;
+            decimal input = 0; 
             var str = Console.ReadLine();
             while (str.Contains(',') || !decimal.TryParse(str, out input))
             {

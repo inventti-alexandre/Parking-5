@@ -111,7 +111,7 @@ namespace Parking
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Exception. "+e.Message);
             }
         }
 
