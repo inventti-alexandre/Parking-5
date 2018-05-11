@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Parking
 {
-    class Settings
+    public class Settings
     {
         public static int Timeout { get; }
-        public static Dictionary<CarType, int> prices = new Dictionary<CarType, int>
+        public static Dictionary<CarType, int> Prices = new Dictionary<CarType, int>
         {
             [CarType.Motorcycle] = 1,
             [CarType.Bus] = 2,
@@ -21,6 +17,7 @@ namespace Parking
 
         static Settings()
         {
+            //Milliseconds
             Timeout = 3000;
             ParkingSpace = 50;
             CoefficientFine = 3;

@@ -4,30 +4,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parking
 {
-    class Parking
+    public class Parking
     {
         private static readonly Lazy<Parking> Lazy = new Lazy<Parking>(() => new Parking());
         private static List<Car> cars = new List<Car>(Settings.ParkingSpace);
         private static List<Transaction> transactions = new List<Transaction>();
         public static decimal Balance { get; private set; }
-        private static System.Timers.Timer _aTimerForCollectPayment, _aTimerForWriteInLog;
+        private static System.Timers.Timer _paymentCollectionTimer, _transactionsLoggingTimer;
 
         private Parking()
         {
             Balance = 0;
-            using (_aTimerForCollectPayment)
+            using (_paymentCollectionTimer)
             {
-                SetTimerForCollectPayment();
+                SetPaymentCollectionTimer();
             }
             
-            using (_aTimerForWriteInLog)
+            using (_transactionsLoggingTimer)
             {
-                SetTimerForWriteInLog();
+                SetTransactionsLoggingTimer();
             }
         }
 
@@ -35,15 +34,15 @@ namespace Parking
 
         public decimal GetTotalRevenue() => Balance;
 
-        private static void SetTimerForCollectPayment()
+        private static void SetPaymentCollectionTimer()
         {
-            _aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
-            _aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
-            _aTimerForCollectPayment.AutoReset = true;
-            _aTimerForCollectPayment.Enabled = true;
+            _paymentCollectionTimer = new System.Timers.Timer(Settings.Timeout);
+            _paymentCollectionTimer.Elapsed += OnTimedEventForPaymentCollection;
+            _paymentCollectionTimer.AutoReset = true;
+            _paymentCollectionTimer.Enabled = true;
         }
 
-        private static async void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
+        private static async void OnTimedEventForPaymentCollection(Object source, ElapsedEventArgs e)
         {
             foreach (var car in cars)
             {
@@ -53,7 +52,7 @@ namespace Parking
 
         public static async Task CollectPaymentAsync(Car car)
         {
-            Settings.prices.TryGetValue(car.CarType, out var price);
+            Settings.Prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
             {
                 price = price * Settings.CoefficientFine;
@@ -87,15 +86,15 @@ namespace Parking
 
         public List<Transaction> GetTransactionsForTheLastMinute() => transactions;
 
-        private static void SetTimerForWriteInLog()
+        private static void SetTransactionsLoggingTimer()
         {
-            _aTimerForWriteInLog = new System.Timers.Timer(60000);
-            _aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
-            _aTimerForWriteInLog.AutoReset = true;
-            _aTimerForWriteInLog.Enabled = true;
+            _transactionsLoggingTimer = new System.Timers.Timer(60000);
+            _transactionsLoggingTimer.Elapsed += OnTimedEventForTransactionsLogging;
+            _transactionsLoggingTimer.AutoReset = true;
+            _transactionsLoggingTimer.Enabled = true;
         }
 
-        private static async void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
+        private static async void OnTimedEventForTransactionsLogging(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
 
         public static async Task WriteToTransactionsFileAsync()
         {
@@ -103,7 +102,7 @@ namespace Parking
             {
                 byte[] array = Encoding.Default.GetBytes("" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ");
                 transactions.Clear();
-                using (var fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
+                using (var fstream = new FileStream("Transactions.log", FileMode.OpenOrCreate))
                 {
                     fstream.Seek(0, SeekOrigin.End);
                     await fstream.WriteAsync(array, 0, array.Length);
@@ -119,7 +118,7 @@ namespace Parking
         {
             try
             {
-                using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
+                using (FileStream fstream = File.OpenRead("Transactions.log"))
                 {
                     byte[] array = new byte[fstream.Length];
                     fstream.Read(array, 0, array.Length);
