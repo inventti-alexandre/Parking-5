@@ -14,7 +14,7 @@ namespace Parking
 
         public Car(CarType type, decimal balance)
         {
-            Id = new Guid(1, 2, 3, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
+            Id = Guid.NewGuid(); 
             CarType = type;
             Balance = balance;
         }
