@@ -92,14 +92,15 @@ namespace Parking
                 {
                     var str = "" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ";
                     transactions.Clear();
-                    byte[] array = System.Text.Encoding.Default.GetBytes(str); // преобразуем строку в байты
+                    byte[] array = Encoding.Default.GetBytes(str); // преобразуем строку в байты
                     fstream.Seek(0, SeekOrigin.End);
                     fstream.Write(array, 0, array.Length); // запись массива байтов в файл
+                    //throw new Exception("aaa");
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Exception. "+e.Message);
                 //throw;
             }
         }
@@ -112,7 +113,7 @@ namespace Parking
                 {
                     byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
                     fstream.Read(array, 0, array.Length); // считываем данные
-                    var textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+                    var textFromFile = Encoding.Default.GetString(array); // декодируем байты в строку
                     return textFromFile;
                 }
             }
