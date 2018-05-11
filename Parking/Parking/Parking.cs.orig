@@ -4,29 +4,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parking
 {
-    public class Parking
+    class Parking
     {
         private static readonly Lazy<Parking> Lazy = new Lazy<Parking>(() => new Parking());
         private static List<Car> cars = new List<Car>(Settings.ParkingSpace);
         private static List<Transaction> transactions = new List<Transaction>();
         public static decimal Balance { get; private set; }
-        private static System.Timers.Timer _paymentCollectionTimer, _transactionsLoggingTimer;
+        private static System.Timers.Timer _aTimerForCollectPayment, _aTimerForWriteInLog;
 
         private Parking()
         {
             Balance = 0;
-            using (_paymentCollectionTimer)
+            using (_aTimerForCollectPayment)
             {
-                SetPaymentCollectionTimer();
+                SetTimerForCollectPayment();
             }
             
-            using (_transactionsLoggingTimer)
+            using (_aTimerForWriteInLog)
             {
-                SetTransactionsLoggingTimer();
+                SetTimerForWriteInLog();
             }
         }
 
@@ -34,15 +35,15 @@ namespace Parking
 
         public decimal GetTotalRevenue() => Balance;
 
-        private static void SetPaymentCollectionTimer()
+        private static void SetTimerForCollectPayment()
         {
-            _paymentCollectionTimer = new System.Timers.Timer(Settings.Timeout);
-            _paymentCollectionTimer.Elapsed += OnTimedEventForPaymentCollection;
-            _paymentCollectionTimer.AutoReset = true;
-            _paymentCollectionTimer.Enabled = true;
+            _aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
+            _aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
+            _aTimerForCollectPayment.AutoReset = true;
+            _aTimerForCollectPayment.Enabled = true;
         }
 
-        private static async void OnTimedEventForPaymentCollection(Object source, ElapsedEventArgs e)
+        private static async void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
         {
             foreach (var car in cars)
             {
@@ -52,7 +53,7 @@ namespace Parking
 
         public static async Task CollectPaymentAsync(Car car)
         {
-            Settings.Prices.TryGetValue(car.CarType, out var price);
+            Settings.prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
             {
                 price = price * Settings.CoefficientFine;
@@ -86,15 +87,15 @@ namespace Parking
 
         public List<Transaction> GetTransactionsForTheLastMinute() => transactions;
 
-        private static void SetTransactionsLoggingTimer()
+        private static void SetTimerForWriteInLog()
         {
-            _transactionsLoggingTimer = new System.Timers.Timer(60000);
-            _transactionsLoggingTimer.Elapsed += OnTimedEventForTransactionsLogging;
-            _transactionsLoggingTimer.AutoReset = true;
-            _transactionsLoggingTimer.Enabled = true;
+            _aTimerForWriteInLog = new System.Timers.Timer(60000);
+            _aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
+            _aTimerForWriteInLog.AutoReset = true;
+            _aTimerForWriteInLog.Enabled = true;
         }
 
-        private static async void OnTimedEventForTransactionsLogging(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
+        private static async void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
 
         public static async Task WriteToTransactionsFileAsync()
         {
@@ -102,15 +103,27 @@ namespace Parking
             {
                 byte[] array = Encoding.Default.GetBytes("" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ");
                 transactions.Clear();
-                using (var fstream = new FileStream("Transactions.log", FileMode.OpenOrCreate))
+                using (var fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
                 {
+<<<<<<< HEAD
                     fstream.Seek(0, SeekOrigin.End);
                     await fstream.WriteAsync(array, 0, array.Length);
+=======
+                    var str = "" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ";
+                    transactions.Clear();
+                    byte[] array = System.Text.Encoding.Default.GetBytes(str); // преобразуем строку в байты
+                    fstream.Seek(0, SeekOrigin.End);
+                    fstream.Write(array, 0, array.Length); // запись массива байтов в файл
+>>>>>>> parent of efb1b6c... Fixed Parking
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception. "+e.Message);
+                Console.WriteLine(e.Message);
+<<<<<<< HEAD
+=======
+                //throw;
+>>>>>>> parent of efb1b6c... Fixed Parking
             }
         }
 
@@ -118,11 +131,17 @@ namespace Parking
         {
             try
             {
-                using (FileStream fstream = File.OpenRead("Transactions.log"))
+                using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
                 {
+<<<<<<< HEAD
                     byte[] array = new byte[fstream.Length];
                     fstream.Read(array, 0, array.Length);
                     var textFromFile = Encoding.Default.GetString(array);
+=======
+                    byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
+                    fstream.Read(array, 0, array.Length); // считываем данные
+                    var textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+>>>>>>> parent of efb1b6c... Fixed Parking
                     return textFromFile;
                 }
             }

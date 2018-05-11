@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Parking
 {
-    class Transaction
+    public class Transaction
     {
-        public DateTime CreatedOn { get; private set; }
-        public int IdCar { get; private set; }
-        public decimal Amount { get; private set; }
-        public Transaction(DateTime time, int ident, decimal amount)
+        public DateTime CreatedOn { get; }
+        public Guid CarId { get; }
+        public decimal Amount { get; }
+
+        public Transaction(DateTime time, Guid carId, decimal amount)
         {
             CreatedOn = time;
-            IdCar = ident;
+            CarId = carId;
             Amount = amount;
         }
     }

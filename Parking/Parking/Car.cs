@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Parking
 {
-    class Car
+    public class Car
     {
-        public int Id { get; private set; }
-        public decimal Fine { get; set; }
+        public Guid Id { get; }
         public decimal Balance { get; set; }
+        public CarType CarType { get; }
 
-        public CarType CarType { get; private set; }
-        public Car(int id, decimal balance, CarType type)
+        public Car(CarType type, decimal balance)
         {
-            Id = id;
-            Balance = balance;
+            Id = Guid.NewGuid(); 
             CarType = type;
-            Fine = 0;
+            Balance = balance;
         }
 
     }
