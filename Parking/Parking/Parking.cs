@@ -36,19 +36,15 @@ namespace Parking
             aTimerForCollectPayment.Enabled = true;
         }
 
-        private static void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e) => cars.ForEach(car => CollectPayment(car));
-
-        private static void SetTimerForWriteInLog()
+        private static async void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
         {
-            aTimerForWriteInLog = new System.Timers.Timer(60000);
-            aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
-            aTimerForWriteInLog.AutoReset = true;
-            aTimerForWriteInLog.Enabled = true;
-        }
+            foreach (var car in cars)
+            {
+                await CollectPaymentAsync(car);
+            }
+        } 
 
-        private static void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e) => WriteToTransactionsFile();
-
-        public static void CollectPayment(Car car)
+        public static async Task CollectPaymentAsync(Car car)
         {
             Settings.prices.TryGetValue(car.CarType, out var price);
             if (car.Balance < price)
@@ -70,7 +66,7 @@ namespace Parking
             if (HasFine(number))
             {
                 TopUp(number, Math.Abs(cars[number - 1].Balance));
-                CollectPayment(cars[number - 1]);
+                CollectPaymentAsync(cars[number - 1]);
             }
             cars.Remove(cars[number - 1]);
         }
@@ -84,23 +80,31 @@ namespace Parking
 
         public List<Transaction> GetTransactionsForTheLastMinute() => transactions;
 
-        public static void WriteToTransactionsFile()
+        private static void SetTimerForWriteInLog()
+        {
+            aTimerForWriteInLog = new System.Timers.Timer(60000);
+            aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
+            aTimerForWriteInLog.AutoReset = true;
+            aTimerForWriteInLog.Enabled = true;
+        }
+
+        private static async void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
+
+        public static async Task WriteToTransactionsFileAsync()
         {
             try
             {
-                using (FileStream fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
+                byte[] array = Encoding.Default.GetBytes("" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ");
+                transactions.Clear();
+                using (var fstream = new FileStream(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log", FileMode.OpenOrCreate))
                 {
-                    var str = "" + DateTime.Now + " " + AmountForTheLastMinute() + " " + transactions.Count + " ";
-                    transactions.Clear();
-                    byte[] array = System.Text.Encoding.Default.GetBytes(str); // преобразуем строку в байты
                     fstream.Seek(0, SeekOrigin.End);
-                    fstream.Write(array, 0, array.Length); // запись массива байтов в файл
+                    await fstream.WriteAsync(array, 0, array.Length);
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                //throw;
             }
         }
 
@@ -110,9 +114,9 @@ namespace Parking
             {
                 using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
                 {
-                    byte[] array = new byte[fstream.Length]; // преобразуем строку в байты                
-                    fstream.Read(array, 0, array.Length); // считываем данные
-                    var textFromFile = System.Text.Encoding.Default.GetString(array); // декодируем байты в строку
+                    byte[] array = new byte[fstream.Length];             
+                    fstream.Read(array, 0, array.Length); 
+                    var textFromFile = Encoding.Default.GetString(array); 
                     return textFromFile;
                 }
             }
