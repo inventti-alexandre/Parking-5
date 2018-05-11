@@ -11,29 +11,36 @@ namespace Parking
 {
     class Parking
     {
-        private static readonly Lazy<Parking> lazy = new Lazy<Parking>(() => new Parking());
+        private static readonly Lazy<Parking> Lazy = new Lazy<Parking>(() => new Parking());
         private static List<Car> cars = new List<Car>(Settings.ParkingSpace);
         private static List<Transaction> transactions = new List<Transaction>();
         public static decimal Balance { get; private set; }
-        private static System.Timers.Timer aTimerForCollectPayment, aTimerForWriteInLog;
+        private static System.Timers.Timer _aTimerForCollectPayment, _aTimerForWriteInLog;
 
         private Parking()
         {
             Balance = 0;
-            Parking.SetTimerForCollectPayment();
-            Parking.SetTimerForWriteInLog();
+            using (_aTimerForCollectPayment)
+            {
+                SetTimerForCollectPayment();
+            }
+            
+            using (_aTimerForWriteInLog)
+            {
+                SetTimerForWriteInLog();
+            }
         }
 
-        public static Parking GetParking() => lazy.Value;
+        public static Parking GetParking() => Lazy.Value;
 
         public decimal GetTotalRevenue() => Balance;
 
         private static void SetTimerForCollectPayment()
         {
-            aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
-            aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
-            aTimerForCollectPayment.AutoReset = true;
-            aTimerForCollectPayment.Enabled = true;
+            _aTimerForCollectPayment = new System.Timers.Timer(Settings.Timeout);
+            _aTimerForCollectPayment.Elapsed += OnTimedEventForCollectPayment;
+            _aTimerForCollectPayment.AutoReset = true;
+            _aTimerForCollectPayment.Enabled = true;
         }
 
         private static async void OnTimedEventForCollectPayment(Object source, ElapsedEventArgs e)
@@ -42,7 +49,7 @@ namespace Parking
             {
                 await CollectPaymentAsync(car);
             }
-        } 
+        }
 
         public static async Task CollectPaymentAsync(Car car)
         {
@@ -68,13 +75,13 @@ namespace Parking
                 TopUp(number, Math.Abs(cars[number - 1].Balance));
                 CollectPaymentAsync(cars[number - 1]);
             }
-            cars.Remove(cars[number - 1]);
+            cars.Remove(cars[number - 1]); 
         }
         public decimal TopUp(int value, decimal money) => cars[value - 1].Balance += money;
 
         public int GetNumberOfFreePlaces() => cars == null ? Settings.ParkingSpace : Settings.ParkingSpace - cars.Count;
 
-        public int GetNumberOfBusyPlaces() => cars?.Count ?? 0;
+        public static int GetNumberOfBusyPlaces() => cars?.Count ?? 0;
 
         public static decimal AmountForTheLastMinute() => transactions.Sum(n => n.Amount);
 
@@ -82,10 +89,10 @@ namespace Parking
 
         private static void SetTimerForWriteInLog()
         {
-            aTimerForWriteInLog = new System.Timers.Timer(60000);
-            aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
-            aTimerForWriteInLog.AutoReset = true;
-            aTimerForWriteInLog.Enabled = true;
+            _aTimerForWriteInLog = new System.Timers.Timer(60000);
+            _aTimerForWriteInLog.Elapsed += OnTimedEventForWriteInLog;
+            _aTimerForWriteInLog.AutoReset = true;
+            _aTimerForWriteInLog.Enabled = true;
         }
 
         private static async void OnTimedEventForWriteInLog(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
@@ -114,9 +121,9 @@ namespace Parking
             {
                 using (FileStream fstream = File.OpenRead(@"C:\Users\Eugene\Documents\GitHub\Parking\Transactions.log"))
                 {
-                    byte[] array = new byte[fstream.Length];             
-                    fstream.Read(array, 0, array.Length); 
-                    var textFromFile = Encoding.Default.GetString(array); 
+                    byte[] array = new byte[fstream.Length];
+                    fstream.Read(array, 0, array.Length);
+                    var textFromFile = Encoding.Default.GetString(array);
                     return textFromFile;
                 }
             }

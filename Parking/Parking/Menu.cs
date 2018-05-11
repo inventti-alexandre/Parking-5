@@ -63,7 +63,7 @@ namespace Parking
         public bool Action()
         {
             var flag = true;
-            var busyPlaces = parking.GetNumberOfBusyPlaces();
+            var busyPlaces = Parking.GetNumberOfBusyPlaces();
             var value = CheckOutInputInt(0, 8);
             Console.Clear();
             switch (value)
