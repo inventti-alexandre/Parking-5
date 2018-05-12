@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,41 +13,18 @@ namespace Parking
         private static List<Car> cars = new List<Car>(Settings.ParkingSpace);
         private static List<Transaction> transactions = new List<Transaction>();
         public static decimal Balance { get; private set; }
-        private static System.Timers.Timer _paymentCollectionTimer, _transactionsLoggingTimer;
 
         private Parking()
         {
             Balance = 0;
-            using (_paymentCollectionTimer)
-            {
-                SetPaymentCollectionTimer();
-            }
-            
-            using (_transactionsLoggingTimer)
-            {
-                SetTransactionsLoggingTimer();
-            }
+            Timer timer = new Timer();
         }
 
         public static Parking GetParking() => Lazy.Value;
 
         public decimal GetTotalRevenue() => Balance;
 
-        private static void SetPaymentCollectionTimer()
-        {
-            _paymentCollectionTimer = new System.Timers.Timer(Settings.Timeout);
-            _paymentCollectionTimer.Elapsed += OnTimedEventForPaymentCollection;
-            _paymentCollectionTimer.AutoReset = true;
-            _paymentCollectionTimer.Enabled = true;
-        }
-
-        private static async void OnTimedEventForPaymentCollection(Object source, ElapsedEventArgs e)
-        {
-            foreach (var car in cars)
-            {
-                await CollectPaymentAsync(car);
-            }
-        }
+        public static List<Car> GetCars() => cars;
 
         public static async Task CollectPaymentAsync(Car car)
         {
@@ -74,7 +50,7 @@ namespace Parking
                 TopUp(number, Math.Abs(cars[number - 1].Balance));
                 CollectPaymentAsync(cars[number - 1]);
             }
-            cars.Remove(cars[number - 1]); 
+            cars.Remove(cars[number - 1]);
         }
         public decimal TopUp(int value, decimal money) => cars[value - 1].Balance += money;
 
@@ -85,16 +61,6 @@ namespace Parking
         public static decimal AmountForTheLastMinute() => transactions.Sum(n => n.Amount);
 
         public List<Transaction> GetTransactionsForTheLastMinute() => transactions;
-
-        private static void SetTransactionsLoggingTimer()
-        {
-            _transactionsLoggingTimer = new System.Timers.Timer(60000);
-            _transactionsLoggingTimer.Elapsed += OnTimedEventForTransactionsLogging;
-            _transactionsLoggingTimer.AutoReset = true;
-            _transactionsLoggingTimer.Enabled = true;
-        }
-
-        private static async void OnTimedEventForTransactionsLogging(Object source, ElapsedEventArgs e) => await WriteToTransactionsFileAsync();
 
         public static async Task WriteToTransactionsFileAsync()
         {
@@ -110,7 +76,7 @@ namespace Parking
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception. "+e.Message);
+                Console.WriteLine("Exception. " + e.Message);
             }
         }
 
@@ -126,7 +92,7 @@ namespace Parking
                     return textFromFile;
                 }
             }
-            catch (FileNotFoundException)
+            catch (Exception e)
             {
                 return null;
             }
