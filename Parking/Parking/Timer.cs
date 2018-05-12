@@ -10,7 +10,7 @@ namespace Parking
     public class Timer
     {
         private static System.Timers.Timer _paymentCollectionTimer, _transactionsLoggingTimer;
-
+        
         public Timer()
         {
             using (_paymentCollectionTimer)
@@ -43,7 +43,7 @@ namespace Parking
 
         private static void SetTransactionsLoggingTimer()
         {
-            _transactionsLoggingTimer = new System.Timers.Timer(60000);
+            _transactionsLoggingTimer = new System.Timers.Timer(Settings.TransactionLoggingTimeout);
             _transactionsLoggingTimer.Elapsed += OnTimedEventForTransactionsLogging;
             _transactionsLoggingTimer.AutoReset = true;
             _transactionsLoggingTimer.Enabled = true;
